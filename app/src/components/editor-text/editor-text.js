@@ -6,6 +6,14 @@ export default class EditorText {
         this.element.addEventListener('blur', () => this.onBlur());
         this.element.addEventListener('keypress', (evt) => this.onKeypress(evt));
         this.element.addEventListener('input', () => this.onTextEdit());
+        if (this.element.parentNode.nodeName === 'A' || this.element.parentNode.nodeName === 'BUTTON') {
+            this.element.addEventListener('contextmenu', (evt) => this.onCtxMenu(evt));
+        }
+    }
+
+    onCtxMenu(evt) {
+        evt.preventDefault();
+        this.onClick();
     }
 
     onKeypress(evt) {
