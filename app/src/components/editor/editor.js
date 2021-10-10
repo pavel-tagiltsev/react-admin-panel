@@ -3,6 +3,7 @@ import axios from 'axios';
 import '../../helpers/iframeLoader.js';
 import DOMHelper from "../../helpers/dom-helper";
 import EditorText from "../editor-text/editor-text.js";
+import UIkit from 'uikit';
 
 export default class Editor extends Component {
     constructor() {
@@ -23,7 +24,7 @@ export default class Editor extends Component {
     init(page) {
         this.iframe = document.querySelector('iframe');
         this.open(page);
-        // this.loadPageList();
+        this.loadPageList();
     }
 
     open(page) {
@@ -44,12 +45,14 @@ export default class Editor extends Component {
             .then(() => this.injectStyles());
     }
 
-    save() {
+    save(callback) {
         const newDom = this.virtualDom.cloneNode(this.virtualDom);
         DOMHelper.unwrapTextNodes(newDom);
         const html = DOMHelper.serializeDOMToString(newDom);
         axios
             .post("./api/savePage.php", {pageName: this.currentPage, html})
+            .then(callback);
+        
     }
 
     enableEditing() {
@@ -98,29 +101,32 @@ export default class Editor extends Component {
     }
 
     render() {
-        // const {pageList} = this.state;
-        // const pages = pageList.map((page, i) => {
-        //     return (
-        //         <h1 key={i}>{page}
-        //             <a
-        //             href="#"
-        //             onClick={() => this.deletePage(page)}>(x)</a>
-        //         </h1>
-        //     )
-        // });
+        const modal = true;
 
         return (
             <>
-                <button onClick={() => this.save()}>On click</button>
                 <iframe src={this.currentPage} frameBorder="0"></iframe>
+
+                <div className='panel'>
+                    <button className="uk-button uk-button-primary" uk-toggle="target: #modal-save">Опубликовать</button>
+                </div>
+
+                <div id="modal-save" uk-modal={modal.toString()} container="false">
+                    <div className="uk-modal-dialog uk-modal-body">
+                        <h2 className="uk-modal-title">Сохранение</h2>
+                        <p>Вы действительно хотите сохранить изменения?</p>
+                        <p className="uk-text-right">
+                            <button className="uk-button uk-button-default uk-modal-close" type="button">Отменить</button>
+                            <button 
+                                className="uk-button uk-button-primary uk-modal-close" 
+                                type="button"
+                                onClick={() => this.save(() => {
+                                    UIkit.notification({message: 'Успешно сохранено', status: 'success'});
+                                })}>Опубликовать</button>
+                        </p>
+                    </div>
+                </div>
             </>
-            // <>
-            //     <input 
-            //     onChange={(evt) => {this.setState({newPageName: evt.target.value})}}
-            //     type="text"/>
-            //     <button onClick={this.createNewPage}>Create a page</button>
-            //     {pages}
-            // </>
         )
     }
 }
